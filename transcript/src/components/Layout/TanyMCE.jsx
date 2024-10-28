@@ -39,7 +39,7 @@ const TanyMCE = () => {
       'insertdatetime media table paste code help wordcount',
       'spellchecker', 'media'
     ],
-    toolbar: 'undo redo | formatselect | bold italic underline strikethrough | \
+    toolbar: 'undo redo | formatselect |  italic underline strikethrough | \
               alignleft aligncenter alignright alignjustify | \
               bullist numlist outdent indent | removeformat | addmedia | help',
     setup: (editor) => {

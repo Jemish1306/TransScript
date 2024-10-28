@@ -4,7 +4,8 @@ import {   Routes, Route } from 'react-router-dom';
 import './App.css'
 import './index.css'
 
-import Home from './Pages/Home';
+
+import New from './Pages/New';
 
 
 const App = () => {
@@ -12,8 +13,10 @@ const App = () => {
     <>
     <Routes>
       
-        <Route path="/" element={<Home/>} />
+        {/* <Route path="/" element={<Home/>} />
+         */}
         {/* Add other routes as needed */}
+        <Route path="/" element={<New/>} />
         
     </Routes>
     
