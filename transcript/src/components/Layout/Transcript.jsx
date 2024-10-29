@@ -4,7 +4,8 @@ import ContextMenu from './ContextMenu';
 
 const Transcript = () => {
   const [contextMenu, setContextMenu] = useState(null);
-  
+  const [isSpeakerPopupOpen, setIsSpeakerPopupOpen] = useState(false);
+
   const entries = [
     {
       name: 'Dillon Bowser',
@@ -24,6 +25,12 @@ const Transcript = () => {
       content: 'Lorem ipsum dolor sit amet consectetur. Eu proin libero turpis scelerisque et purus. Non tincidunt mauris blandit turpis dolor ac enim. Eu ultrices velit convallis cursus pellentesque ac commodo turpis. Nisl sed nibh consequat amet facilisi diam varius aliquam. Nulla id mi non integer at.',
       color: 'bg-green-400',
     },
+    {
+      name: 'Jimenez Meluski',
+      time: '02:07',
+      content: 'Lorem ipsum dolor sit amet consectetur. Eu proin libero turpis scelerisque et purus. Non tincidunt mauris blandit turpis dolor ac enim. Eu ultrices velit convallis cursus pellentesque ac commodo turpis. Nisl sed nibh consequat amet facilisi diam varius aliquam. Nulla id mi non integer at.',
+      color: 'bg-blue-400',
+    },
   ];
 
   const handleRightClick = (event) => {
@@ -36,29 +43,32 @@ const Transcript = () => {
 
   const closeContextMenu = () => setContextMenu(null);
 
+  const toggleSpeakerPopup = () => {
+    setIsSpeakerPopupOpen((prev) => !prev);
+  };
+
   // Add an event listener to detect clicks outside the context menu
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Only close the context menu if the click is outside it
-      if (!event.target.closest('.context-menu')) {
+      if (!event.target.closest('.context-menu') && !event.target.closest('.speaker-popup')) {
         closeContextMenu();
+        setIsSpeakerPopupOpen(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
 
-    // Cleanup the event listener on component unmount
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
   return (
-    <div onContextMenu={handleRightClick} className="space-y-6 overflow-y-auto">
+    <div onContextMenu={handleRightClick} className="overflow-y-auto shadow-lg gap-6 p-4">
       {entries.map((entry, index) => (
         <div key={index} className="p-6 rounded-lg shadow-md bg-light-crim">
           <div className="flex items-center space-x-3 mb-2">
-            <div className={`px-4 py-2 rounded-full text-white ${entry.color}`}>
+            <div className={`px-4 py-2 rounded-full text-white ${entry.color} cursor-pointer`} onClick={toggleSpeakerPopup}>
               <span className="font-semibold">{entry.name}</span>
             </div>
           </div>
@@ -68,9 +78,33 @@ const Transcript = () => {
           </div>
         </div>
       ))}
+
+      {/* Context Menu */}
       {contextMenu && (
         <div className="context-menu" style={{ position: 'absolute' }} onClick={closeContextMenu}>
           <ContextMenu x={contextMenu.x} y={contextMenu.y} />
+        </div>
+      )}
+
+      {/* Speaker Popup */}
+      {isSpeakerPopupOpen && (
+        <div className="speaker-popup  absolute ml-28 top-64 bg-black text-white rounded-xl space-y-4 shadow-lg p-4 z-50 w-auto">
+          <h3 className="text-lg font-semibold mb-4">Speakers</h3>
+          {[
+            { name: 'Dillon Bowser', color: 'bg-pink-400' },
+            { name: 'Maj Vestal', color: 'bg-blue-700' },
+            { name: 'Lydia Mansel', color: 'bg-blue-400' },
+            { name: 'Dani Meluski-Jimenez', color: 'bg-green-500' },
+            { name: 'Andrew Tejerina', color: 'bg-orange-500' },
+          ].map((speaker, index) => (
+            <div
+              key={index}
+              className={`flex items-center justify-between px-4 py-2 mb-2 rounded-full ${speaker.color} text-white cursor-pointer`}
+            >
+              <span className="font-medium">{speaker.name}</span>
+            </div>
+          ))}
+          <button className="w-full mt-2 py-2 bg-neon-yellow text-black rounded-full">Add New Speaker +</button>
         </div>
       )}
     </div>

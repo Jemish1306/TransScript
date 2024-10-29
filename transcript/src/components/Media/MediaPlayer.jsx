@@ -104,30 +104,30 @@ const MediaPlayer = () => {
           {/* Time Display */}
           <span className="text-xs font-semibold">{formatTime(currentTime)}</span>
 
-          {/* Control Buttons */}
-          <div className="flex items-center space-x-4">
-            <button onClick={togglePlayPause}>
+         {/* Control Buttons */}
+         <div className="flex items-center space-x-4 justify-center">
+            <button onClick={togglePlayPause} className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
               {isPlaying ? <FaPause /> : <FaPlay />}
             </button>
-            <button onClick={() => (mediaRef.current.currentTime -= 10)}>
+            <button onClick={() => (mediaRef.current.currentTime -= 10)} className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
               <FaRedo />
             </button>
-            <button onClick={() => (mediaRef.current.currentTime += 10)}>
+            <button onClick={() => (mediaRef.current.currentTime += 10)} className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
               <FaUndo />
             </button>
-            <button>
+            <button className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
               <FaVolumeUp />
             </button>
-            <button onClick={changePlaybackRate}>
+            <button onClick={changePlaybackRate} className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
               {playbackRate}x
             </button>
-            <button>
+            <button className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
               <FaDownload />
             </button>
-            <button>
+            <button className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
               <FaVideo />
             </button>
-            <label className="cursor-pointer">
+            <label className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full cursor-pointer flex items-center justify-center">
               <FaUpload />
               <input
                 type="file"
