@@ -4,24 +4,38 @@ import { IoArrowBack } from "react-icons/io5";
 import audio from '../../assets/icons/Audio.png';
 import audiopink from '../../assets/icons/Audiopink.png';
 import audiogreen from '../../assets/icons/Audiogreen.png';
+import axios from 'axios'; // Import axios to make HTTP requests
+import PropTypes from 'prop-types';
 
-const MediaPlayer = () => {
-  const mediaRef = useRef(null); // Changed to mediaRef to handle both audio and video
+const MediaPlayer = ({ setTranscriptionId,setPlaying  }) => {
+  const mediaRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
-  const [mediaSrc, setMediaSrc] = useState(''); // State for the uploaded media file
-  const [isVideo, setIsVideo] = useState(false); // State to check if the media is a video
+  const [mediaSrc, setMediaSrc] = useState('');
+  const [isVideo, setIsVideo] = useState(false);
+
+  // const togglePlayPause = () => {
+  //   if (isPlaying) {
+  //     mediaRef.current.pause();
+  //   } else {
+  //     mediaRef.current.play();
+  //   }
+  //   setIsPlaying(!isPlaying);
+  // };
 
   const togglePlayPause = () => {
     if (isPlaying) {
       mediaRef.current.pause();
+      setPlaying(false); // Stop displaying the transcript
     } else {
       mediaRef.current.play();
+      setPlaying(true); // Start displaying the transcript
     }
     setIsPlaying(!isPlaying);
   };
+
 
   const handleTimeUpdate = () => {
     setCurrentTime(mediaRef.current.currentTime);
@@ -49,16 +63,78 @@ const MediaPlayer = () => {
     return `${minutes}:${seconds}`;
   };
 
-  const handleMediaUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const mediaURL = URL.createObjectURL(file);
-      setMediaSrc(mediaURL); // Set the uploaded media as the source
-      setIsVideo(file.type.startsWith('video')); // Check if the uploaded file is a video
-      setIsPlaying(false);    // Reset the play state
-      setCurrentTime(0);      // Reset the time display
+  // const handleMediaUpload = (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     const mediaURL = URL.createObjectURL(file);
+  //     setMediaSrc(mediaURL);
+  //     setIsVideo(file.type.startsWith('video'));
+  //     setIsPlaying(false);
+  //     setCurrentTime(0);
+  //   }
+  // };
+
+  // src/components/MediaPlayer.jsx
+// Call `props.setTranscriptionId(response.data.transcriptionId);` after successful upload
+
+const handleMediaUpload = async (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const mediaURL = URL.createObjectURL(file);
+    setMediaSrc(mediaURL);
+    setIsVideo(file.type.startsWith('video'));
+    setIsPlaying(false);
+    setCurrentTime(0);
+
+    // Upload the file to obtain transcription ID
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setTranscriptionId(response.data.transcriptionId); // Set transcription ID
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
-  };
+  }
+};
+
+
+
+
+  // Function to handle media download using FFmpeg
+  const handleDownload = async () => {
+    try {
+        const response = await fetch(mediaSrc);
+        const blob = await response.blob();
+
+        const formData = new FormData();
+        formData.append('file', blob, 'media.mp4');
+
+        const downloadResponse = await axios.post('http://localhost:5000/api/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            responseType: 'blob'
+        });
+
+        const url = window.URL.createObjectURL(new Blob([downloadResponse.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'downloaded_media.mp4');
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+    } catch (error) {
+        console.error("Download failed: ", error);
+    }
+};
+
+
+
+ 
 
   return (
     <div className="bg-black text-white rounded-lg p-6 mb-4 w-full max-w-md mx-auto">
@@ -69,22 +145,34 @@ const MediaPlayer = () => {
         <h1 className="text-lg font-semibold">8.3.24 Design Meeting Notes</h1>
       </div>
 
-      {/* Audio Tracks with Waveform Icons */}
+      {/* Display Video or Audio Tracks with Waveform Icons */}
       <div className="bg-pinkish rounded-lg py-6 px-4 space-y-4 mb-4">
-        <div className="bg-primary-black h-12 rounded-lg flex items-center justify-center">
-          <img src={audio} alt="Audio Track 1" className="h-6" />
-        </div>
-        <div className="bg-primary-black h-12 rounded-lg flex items-center justify-center">
-          <img src={audiopink} alt="Audio Track 2" className="h-6" />
-        </div>
-        <div className="bg-primary-black h-12 rounded-lg flex items-center justify-center">
-          <img src={audiogreen} alt="Audio Track 3" className="h-6" />
-        </div>
+        {isVideo ? (
+          <video
+            ref={mediaRef}
+            src={mediaSrc}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            controls
+            className="w-full rounded-lg"
+          />
+        ) : (
+          <>
+            <div className="bg-primary-black h-12 rounded-lg flex items-center justify-center">
+              <img src={audio} alt="Audio Track 1" className="h-6" />
+            </div>
+            <div className="bg-primary-black h-12 rounded-lg flex items-center justify-center">
+              <img src={audiopink} alt="Audio Track 2" className="h-6" />
+            </div>
+            <div className="bg-primary-black h-12 rounded-lg flex items-center justify-center">
+              <img src={audiogreen} alt="Audio Track 3" className="h-6" />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Combined Playback Progress Bar and Controls */}
       <div className="bg-light-crim rounded-lg py-3 px-4 flex flex-col items-center text-primary-black">
-        {/* Progress Bar */}
         <div className="relative bg-light-crim rounded-full h-2 w-full mb-4">
           <input
             type="range"
@@ -99,13 +187,10 @@ const MediaPlayer = () => {
           />
         </div>
 
-        {/* Time and Playback Controls */}
         <div className="flex justify-between items-center w-full">
-          {/* Time Display */}
           <span className="text-xs font-semibold">{formatTime(currentTime)}</span>
 
-         {/* Control Buttons */}
-         <div className="flex items-center space-x-4 justify-center">
+          <div className="flex items-center space-x-4 justify-center">
             <button onClick={togglePlayPause} className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
               {isPlaying ? <FaPause /> : <FaPlay />}
             </button>
@@ -121,11 +206,8 @@ const MediaPlayer = () => {
             <button onClick={changePlaybackRate} className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
               {playbackRate}x
             </button>
-            <button className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
+            <button onClick={handleDownload} className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
               <FaDownload />
-            </button>
-            <button className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full justify-center flex items-center">
-              <FaVideo />
             </button>
             <label className="w-6 h-6 hover:bg-black hover:text-textcolor rounded-full cursor-pointer flex items-center justify-center">
               <FaUpload />
@@ -137,34 +219,14 @@ const MediaPlayer = () => {
               />
             </label>
           </div>
-
-          {/* Total Duration Display */}
           <span className="text-xs font-semibold">{formatTime(duration)}</span>
         </div>
       </div>
-
-      {/* Hidden Media Element */}
-      {mediaSrc && (
-        isVideo ? (
-          <video
-            ref={mediaRef}
-            src={mediaSrc}
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleLoadedMetadata}
-            className="hidden"
-          />
-        ) : (
-          <audio
-            ref={mediaRef}
-            src={mediaSrc}
-            onTimeUpdate={handleTimeUpdate}
-            onLoadedMetadata={handleLoadedMetadata}
-            className="hidden"
-          />
-        )
-      )}
     </div>
   );
 };
-
+MediaPlayer.propTypes = {
+  setTranscriptionId: PropTypes.func.isRequired,
+  setPlaying: PropTypes.func.isRequired,
+};
 export default MediaPlayer;
