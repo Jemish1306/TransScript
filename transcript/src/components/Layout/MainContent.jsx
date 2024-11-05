@@ -9,8 +9,9 @@ import KeyboardShortcutModal from './../Model/KeyboardShortcutModal';
 import DownloadModal from './../Model/DownloadModal';
 import AddCollaborator from '../Model/AddCollaborator';
 import RatingModal from './../Model/RatingModal';
+import PropTypes from 'prop-types';
 
-const MainContent = () => {
+const MainContent = ({transcriptionId }) => {
   const [activeModal, setActiveModal] = useState(null);
   const [tooltip, setTooltip] = useState({ visible: false, text: '', x: 0, y: 0 });
   const [rating, setRating] = useState(0); // Track the current rating
@@ -18,7 +19,7 @@ const MainContent = () => {
   const openModal = (modalName) => setActiveModal(modalName);
   const closeModal = () => setActiveModal(null);
 
-  // Function to show tooltip
+ 
   const showTooltip = (e, text) => {
     const iconRect = e.target.getBoundingClientRect();
     setTooltip({
@@ -126,7 +127,8 @@ const MainContent = () => {
       </div>
 
       {/* Transcript Content */}
-      <Transcript />
+      {/* <Transcript /> */}
+      {transcriptionId ? <Transcript transcriptionId={transcriptionId} /> : <p>No Transcript Available</p>}
 
       {/* Tooltip */}
       {tooltip.visible && (
@@ -154,5 +156,9 @@ const MainContent = () => {
     </div>
   );
 };
+MainContent.propTypes = {
+  transcriptionId: PropTypes.string, // Add prop type validation for transcriptionId
+};
+
 
 export default MainContent;
